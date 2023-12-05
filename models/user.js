@@ -32,11 +32,11 @@ const userSchema = new mongoose.Schema({
     },
   ],
   // Additional fields
-  status: {
-    type: String,
-    enum: ["Online", "Offline", "Away"],
-    default: "Offline",
-  },
+//   status: {
+//     type: String,
+//     enum: ["Online", "Offline", "Away"],
+//     default: "Offline",
+//   },
   lastSeen: {
     type: Date,
     default: Date.now,
