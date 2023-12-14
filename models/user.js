@@ -3,10 +3,12 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
+TODO = "657b5789f97454ee9895c500"
+TODO = "657b581bfedab7ead7c1b794";
 // Define User Schema
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    username: {
       type: String,
       required: true,
     },
@@ -45,10 +47,10 @@ const userSchema = new mongoose.Schema(
     //     enum: ["Online", "Offline", "Away"],
     //     default: "Offline",
     //   },
-    lastSeen: {
-      type: Date,
-      default: Date.now,
-    },
+    // lastSeen: {
+    //   type: Date,
+    //   default: Date.now,
+    // },
     // Array to store friend requests
     friendRequests: [
       {
