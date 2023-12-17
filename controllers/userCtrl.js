@@ -4,7 +4,7 @@ const {
   NotFoundError,
   BadRequestError,
   UnauthenticatedError,
-} = require("../errors");
+} = require("../errors/index");
 const { createJWT } = require("../config/jwt");
 const { createRefreshJWT } = require("../config/refreshToken");
 const jwt = require("jsonwebtoken");
