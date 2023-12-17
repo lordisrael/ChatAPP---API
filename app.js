@@ -13,6 +13,7 @@ const server = http.createServer(app);
 const socketIO = require("socket.io");
 
 const handleChatEvents = require('./controllers/chatCtrl')
+const errorHandlerMiddleware = require("./middleware/error-handler");
 const notFoundMiddleware = require("./middleware/not-Found");
 const authRoute = require("./routes/authRoute");
 
@@ -21,6 +22,7 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRoute);
 app.use(notFoundMiddleware);
+app.use(errorHandlerMiddleware);
 
 // const server = app.listen(port, () => {
 //   console.log(`Server is listening on port ${port}`);
