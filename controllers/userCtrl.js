@@ -5,7 +5,7 @@ const {
   BadRequestError,
   UnauthenticatedError,
 } = require("../errors/index");
-const cloudinaryUploadImg = require("../utils/cloudinary");
+const {cloudinaryUploadImg, cloudinaryDeleteImg} = require("../utils/cloudinary");
 const { createJWT } = require("../config/jwt");
 const { createRefreshJWT } = require("../config/refreshToken");
 const {
@@ -79,7 +79,7 @@ const login = asyncHandler(async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       { _id },
       {
-        profilePicture: imageUrl.url, // Assuming 'image' is the field in your User model for the profile picture
+        profilePicture: imageUrl.url, 
       },
       {
         new: true,
@@ -94,7 +94,86 @@ const login = asyncHandler(async (req, res) => {
       .json({ updatedUser, msg: "Profile picture updated" });
   });
 const deleteProfilePicture = asyncHandler(async(req, res) => {
+  const { _id, profilePicture } = req.user;
 
+  if (!profilePicture) {
+    return res
+      .status(400)
+      .json({ message: "Profile picture URL not found in user data" });
+  }
+
+  try {
+    // Extracting public ID from the profile picture URL
+    const publicIdMatch = profilePicture.match(/\/v\d+\/([^/]+)\./);
+    const publicId = publicIdMatch ? publicIdMatch[1] : null;
+
+    if (!publicId) {
+      return res
+        .status(400)
+        .json({ message: "Unable to extract public ID from the URL" });
+    }
+
+    // Delete image from Cloudinary using the extracted public ID
+    const cloudinaryResult = await cloudinaryDeleteImg(publicId);
+    if (cloudinaryResult.result !== "ok") {
+      return res.status(500).json({
+        message: "Error deleting profile picture from Cloudinary",
+        cloudinaryResult,
+      });
+    }
+
+    // Upload the default image to Cloudinary
+    const defaultImage = "../public/image/user/default.jpg"; 
+    const cloudinaryUploadResult = await cloudinaryUploadImg(
+      defaultImage,
+      "image"
+    );
+    // Update the user's profilePictureUrl field to null or a default value
+    const user = await User.findById(_id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.profilePicture) {
+      return res.status(400).json({ message: "Profile picture URL not found in user data" });
+    }
+
+    user.profilePicture = cloudinaryUploadResult.url;
+    await user.save();
+
+    // const updatedUser = await User.findByIdAndUpdate(
+    //   {_id},
+    //   { $set: { profilePicture: cloudinaryUploadResult.secure_url } },
+    //   { new: true }
+    // ).select("+profilePicture");;
+
+    // if (!updatedUser) {
+    //   return res.status(404).json({ message: "User not found" });
+    // }
+
+    res.status(200).json({
+      message: "Profile picture deleted from Cloudinary and database",
+      cloudinaryResult,
+      user,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error deleting profile picture", error });
+  }
+
+
+  // Extracting public ID from the profile picture URL
+  // const publicIdMatch = profilePictureUrl.match(/\/v\d+\/([^/]+)\./);
+  // const publicId = publicIdMatch ? publicIdMatch[1] : null;
+
+  // cloudinary.v2.api
+  //   .delete_resources(["q1qtcmgewdhaz1zx5yr6"], {
+  //     type: "upload",
+  //     resource_type: "image",
+  //   })
+  //   .then(console.log);
 })
 
 const editBio = asyncHandler(async(req, res) => {
@@ -104,5 +183,6 @@ const editBio = asyncHandler(async(req, res) => {
 module.exports = {
     createUser,
     login,
-    uploadProfilePicture
+    uploadProfilePicture,
+    deleteProfilePicture
 }
