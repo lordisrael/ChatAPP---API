@@ -21,4 +21,36 @@ const cloudinaryUploadImg = async (fileToUploads) => {
   });
 };
 
-module.exports = cloudinaryUploadImg;
+
+const cloudinaryUploadImgDel = async (fileToUploads) => {
+  try {
+    const result = await cloudinary.uploader.upload(fileToUploads, {
+      resource_type: "auto",
+    });
+
+    return {
+      url: result.secure_url,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+const cloudinaryDeleteImg = async (publicIdToDelete) => {
+  try {
+    const result = await cloudinary.uploader.destroy(publicIdToDelete);
+
+    if (result && result.result === "ok") {
+      return result;
+    } else {
+      throw new Error("Deletion unsuccessful");
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+
+module.exports = {cloudinaryUploadImg, cloudinaryDeleteImg, cloudinaryUploadImgDel};
