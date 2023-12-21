@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
     },
     profilePicture: {
       type: String,
-      default: "default_profile_picture.jpg", // Default profile picture URL
+      default: process.env.DEFAULT_PROFILE_PICTURE_URL // Default profile picture URL
     },
     bio: {
       type: String,
