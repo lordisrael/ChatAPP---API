@@ -5,6 +5,7 @@ const {
   createUser,
   login,
   uploadProfilePicture,
+  deleteProfilePicture,
   
 } = require("../controllers/userCtrl");
 
@@ -22,6 +23,12 @@ router.put(
   uploadPhoto.single("image"),
   userImgResize,
   uploadProfilePicture
+);
+
+router.put(
+  "/delete",
+  auth,
+  deleteProfilePicture
 );
 
 
