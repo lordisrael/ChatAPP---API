@@ -12,7 +12,7 @@ const server = http.createServer(app);
 
 const socketIO = require("socket.io");
 
-const handleChatEvents = require('./controllers/chatCtrl')
+const handleChatEvents = require("./controllers/msgCtrl");
 const errorHandlerMiddleware = require("./middleware/error-handler");
 const notFoundMiddleware = require("./middleware/not-Found");
 const authRoute = require("./routes/authRoute");
