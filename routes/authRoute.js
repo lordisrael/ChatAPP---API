@@ -6,6 +6,10 @@ const {
   login,
   uploadProfilePicture,
   deleteProfilePicture,
+  editBio,
+  sendFriendRequest,
+  viewFriendRequests,
+  acceptFriendRequest,
   
 } = require("../controllers/userCtrl");
 
@@ -30,6 +34,10 @@ router.put(
   auth,
   deleteProfilePicture
 );
+router.post("/send-friend-request/:_id", auth, sendFriendRequest);
+router.get("/view-friend-requests", auth, viewFriendRequests);
+router.put("/accept-friend-request/:requestId", auth, acceptFriendRequest);
+router.put( "/editbio", auth, editBio)
 
 
 module.exports = router;
