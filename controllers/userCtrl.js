@@ -168,13 +168,175 @@ const deleteProfilePicture = asyncHandler(async(req, res) => {
 })
 
 const editBio = asyncHandler(async(req, res) => {
+  const { _id } = req.user;
+  const { bio } = req.body;
+   try {
+     const updatedUser = await User.findByIdAndUpdate(
+       { _id },
+       { bio: bio },
+       { new: true }
+     );
 
+     if (!updatedUser) {
+       throw new NotFoundError(`No user found`);
+     }
+
+     res.status(200).json({ updatedUser, message: "Bio updated successfully" });
+   } catch (error) {
+     res
+       .status(500)
+       .json({ message: "Error updating bio", error: error.message });
+   }
 })
+
+const sendFriendRequest = asyncHandler(async(req, res) => {
+  const { _id } = req.params;
+  const senderId = req.user.id;
+
+  const sender = await User.findById(senderId);
+  const receiver = await User.findById(_id);
+
+  if (!sender || !receiver) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // Check if the receiver is already in the sender's friend requests or friends
+  const isReceiverInfriends = sender.friends.some((friend) =>
+    friend.user.equals(_id)
+  );
+
+  if (isReceiverInfriends) {
+    return res.status(400).json({
+      message: "User is already a friend",
+    });
+  }
+
+  // Check if the receiver has already sent a friend request to the sender
+  const isRequestSent = receiver.friendRequests.includes(senderId);
+
+  if (isRequestSent) {
+    return res.status(400).json({
+      message: "Friend request already sent by the receiver",
+    });
+  }
+
+  // Add receiver's ID to sender's friend requests
+  receiver.friendRequests.push(senderId);
+  await receiver.save();
+
+  return res.status(200).json({ message: "Friend request sent" });
+})
+
+const viewFriendRequests = asyncHandler(async (req, res) => {
+  // Assuming authenticated user's ID is available in req.user.id
+  const userId = req.user.id;
+
+  const user = await User.findById(userId).populate(
+    "friendRequests",
+    "username email _id"
+  ); // Populate only necessary fields
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  return res.status(200).json({ friendRequests: user.friendRequests });
+});
+
+
+// Function to retrieve userId from friendRequestId within the array
+async function getUserIdFromFriendRequest(friendRequestId) {
+  try {
+    // Find the user with friendRequestId in the friendRequests array
+    const user = await User.findOne({ "friendRequests._id": friendRequestId });
+
+    if (!user || !user.friendRequests) {
+      return null; // Or handle the case where user or friendRequests is not found
+    }
+
+    // Find the friend request object matching the friendRequestId
+    const friendRequest = user.friendRequests.find(
+      (request) => request._id.toString() === friendRequestId
+    );
+
+    if (!friendRequest) {
+      return null; // Or handle the case where friend request is not found
+    }
+
+    // Accessing the user ID from the friend request object
+    return friendRequest._id;
+  } catch (error) {
+    throw new Error("Error retrieving user ID from friend request");
+  }
+}
+
+const acceptFriendRequest = asyncHandler(async (req, res) => {
+  const { requestId } = req.params; // ID of the friend request
+  const userId = req.user.id;
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // const senderId = await getUserIdFromFriendRequest(requestId);
+  // console.log(senderId)
+
+  // Find the friend request index containing the requestId
+  const requestIndex = user.friendRequests.findIndex(
+    (request) => request.toString() === requestId
+  );
+  if (requestIndex === -1) {
+    return res.status(404).json({ message: "Friend request not found" });
+  }
+
+  // Extract the requestId from the friendRequests array
+  const extractedRequestId = user.friendRequests[requestIndex];
+
+  // Fetch the user who sent the friend request (sender)
+  const sender = await User.findById(extractedRequestId);
+  if (!sender) {
+    return res.status(404).json({ message: "Sender not found" });
+  }
+
+  // Check if the request exists in the user's friend requests
+  if (!user.friendRequests.includes(requestId)) {
+    return res.status(404).json({ message: "Friend request not found" });
+  }
+
+  // Check if the sender's ID is in the receiver's friend requests
+  // const requestIndex = user.friendRequests.indexOf(requestId);
+
+  // if (requestIndex === -1) {
+  //   return res.status(404).json({
+  //     message: "Friend request not found",
+  //   });
+  // }
+
+  // Remove sender's ID from receiver's friend requests
+  user.friendRequests.splice(requestIndex, 1);
+
+  // Add sender's ID to receiver's friends
+  user.friends.push(sender._id); // Push sender's ID directly
+
+  // Add receiver's ID to sender's friends
+  sender.friends.push(user._id); // Push receiver's ID directly
+
+  await user.save();
+  await sender.save();
+  return res.status(200).json({ message: "Friend request accepted" });
+});
+
 
 module.exports = {
     createUser,
     login,
+    editBio,
     uploadProfilePicture,
+    sendFriendRequest,
+    viewFriendRequests,
+    acceptFriendRequest,
     deleteProfilePicture
 }
 
