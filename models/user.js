@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
     },
     profilePicture: {
       type: String,
-      default: process.env.DEFAULT_PROFILE_PICTURE_URL // Default profile picture URL
+      default: process.env.DEFAULT_PROFILE_PICTURE_URL, // Default profile picture URL
     },
     bio: {
       type: String,
@@ -51,7 +51,7 @@ const userSchema = new mongoose.Schema(
     //   type: Date,
     //   default: Date.now,
     // },
-    // Array to store friend requests
+
     friendRequests: [
       {
         type: mongoose.Schema.Types.ObjectId,
