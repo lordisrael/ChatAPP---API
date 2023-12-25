@@ -2,9 +2,19 @@ const Chat = require("../models/chat");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 // Function to handle sending messages
-const sendMessage = async (socket, senderId, receiverId, text) => {
+const sendMessage = async (io, senderId, receiverId, text) => {
   try {
     // const { text } = data;
+
+    const sender = await User.findById(senderId).populate("friends");
+
+    if (
+      !sender ||
+      !sender.friends.some((friend) => friend._id.equals(receiverId))
+    ) {
+      console.error("Receiver is not a friend of the sender");
+      return; // Receiver is not a friend, halt the process
+    }
 
     if (!text || text.trim() === "") {
       console.error("Empty message text");
@@ -37,8 +47,8 @@ const sendMessage = async (socket, senderId, receiverId, text) => {
     // Emit the message to the sender and receiver
     //io.to(senderId).emit("message", { senderId, text });
     //io.to(receiverId).emit("message", { senderId, text });
-    socket.to(senderId).emit("message", { senderId, text });
-    socket.to(receiverId).emit("message", { senderId, text });
+    io.to(senderId).emit("message", { senderId, text });
+    io.to(receiverId).emit("message", { senderId, text });
   } catch (error) {
     // Handle errors
     console.error(error);
@@ -46,7 +56,7 @@ const sendMessage = async (socket, senderId, receiverId, text) => {
   }
 };
 
-const verifyToken = (token) => {
+const verifyToken = async (token) => {
   try {
     // Verify the token and decode the payload
     const decoded = jwt.verify(token, process.env.JWT_SECRET); 
