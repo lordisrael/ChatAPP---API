@@ -243,33 +243,6 @@ const viewFriendRequests = asyncHandler(async (req, res) => {
   return res.status(200).json({ friendRequests: user.friendRequests });
 });
 
-
-// Function to retrieve userId from friendRequestId within the array
-async function getUserIdFromFriendRequest(friendRequestId) {
-  try {
-    // Find the user with friendRequestId in the friendRequests array
-    const user = await User.findOne({ "friendRequests._id": friendRequestId });
-
-    if (!user || !user.friendRequests) {
-      return null; // Or handle the case where user or friendRequests is not found
-    }
-
-    // Find the friend request object matching the friendRequestId
-    const friendRequest = user.friendRequests.find(
-      (request) => request._id.toString() === friendRequestId
-    );
-
-    if (!friendRequest) {
-      return null; // Or handle the case where friend request is not found
-    }
-
-    // Accessing the user ID from the friend request object
-    return friendRequest._id;
-  } catch (error) {
-    throw new Error("Error retrieving user ID from friend request");
-  }
-}
-
 const acceptFriendRequest = asyncHandler(async (req, res) => {
   const { requestId } = req.params; // ID of the friend request
   const userId = req.user.id;
@@ -279,9 +252,6 @@ const acceptFriendRequest = asyncHandler(async (req, res) => {
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
-
-  // const senderId = await getUserIdFromFriendRequest(requestId);
-  // console.log(senderId)
 
   // Find the friend request index containing the requestId
   const requestIndex = user.friendRequests.findIndex(
@@ -304,15 +274,6 @@ const acceptFriendRequest = asyncHandler(async (req, res) => {
   if (!user.friendRequests.includes(requestId)) {
     return res.status(404).json({ message: "Friend request not found" });
   }
-
-  // Check if the sender's ID is in the receiver's friend requests
-  // const requestIndex = user.friendRequests.indexOf(requestId);
-
-  // if (requestIndex === -1) {
-  //   return res.status(404).json({
-  //     message: "Friend request not found",
-  //   });
-  // }
 
   // Remove sender's ID from receiver's friend requests
   user.friendRequests.splice(requestIndex, 1);
@@ -339,34 +300,3 @@ module.exports = {
     acceptFriendRequest,
     deleteProfilePicture
 }
-
-      // const updatedUser = await User.findById(
-      //  { _id },
-      // )
-      // console.log(updatedUser)
-  
-      
-  
-      // Upload the default image to Cloudinary
-      // const defaultImage = "../public/image/user/default.jpg"; 
-      // let imageUrl = "";
-      // const cloudinaryUploadResult = await cloudinaryUploadImg(
-      //   defaultImage,
-      //   "image"
-      // );
-      // imageUrl = cloudinaryUploadResult
-      // // Update the user's profilePictureUrl field to null or a default value
-      // const updatedUser = await User.findByIdAndUpdate(
-      //   { _id },
-      //   {
-      //     profilePicture: imageUrl.url,
-      //   },
-      //   {
-      //     new: true,
-      //   }
-      // );
-  
-      // if (!updatedUser) {
-      //   throw new NotFoundError(`No user found`);
-      // }
-     
