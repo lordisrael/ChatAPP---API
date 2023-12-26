@@ -22,12 +22,12 @@ const sendMessage = async (io, senderId, receiverId, text) => {
     }
 
     // Check if a chat exists between these two users
-     let chat = await Chat.findOne({
-       $or: [
-         { participants: { $all: [senderId, receiverId] } },
-         { participants: { $all: [receiverId, senderId] } }, // Check both combinations
-       ],
-     });
+    let chat = await Chat.findOne({
+      $or: [
+        { participants: { $all: [senderId, receiverId] } },
+        { participants: { $all: [receiverId, senderId] } }, // Check both combinations
+      ],
+    });
 
     // If no chat exists, create a new one
     if (!chat) {
@@ -44,11 +44,9 @@ const sendMessage = async (io, senderId, receiverId, text) => {
 
     await chat.save();
 
-    // Emit the message to the sender and receiver
-    //io.to(senderId).emit("message", { senderId, text });
-    //io.to(receiverId).emit("message", { senderId, text });
-    io.to(senderId).emit("message", { senderId, text });
-    io.to(receiverId).emit("message", { senderId, text });
+    io.to(chat._id.toString()).emit("message", { senderId, text });
+    //socket.emit("message", { senderId, text });
+    
   } catch (error) {
     // Handle errors
     console.error(error);
@@ -102,10 +100,49 @@ const handleChatEvents = (io) => {
     socket.disconnect();
   });
 
-  io.on("connection", (socket) => {
+  io.on("connection",async (socket) => {
     console.log(`Socket connected: ${socket.id}`);
 
     const receiverId = socket.handshake.query.receiverId;
+
+    let chat = await Chat.findOne({
+      $or: [
+        { participants: { $all: [socket.user._id, receiverId] } },
+        { participants: { $all: [receiverId, socket.user._id] } },
+      ],
+    });
+
+    // if (!chat) {
+    //   chat = new Chat({
+    //     participants: [socket.user._id, receiverId],
+    //   });
+    // }
+    if (!chat) {
+      console.log("Creating a new chat...");
+
+      // If no chat exists, create a new one
+      let newChat = new Chat({
+        participants: [socket.user._id, receiverId],
+        messages: [], // Initialize messages as an empty array
+      });
+
+      try {
+        chat = await newChat.save();
+        console.log("New chat created:", chat._id);
+      } catch (error) {
+        console.error("Error creating a new chat:", error);
+        socket.disconnect();
+        return;
+      }
+    }
+
+    if (!chat) {
+      console.error("Chat not found for the user");
+      socket.disconnect();
+      return;
+    }
+
+    socket.join(chat._id.toString());
 
     // Handle sending messages
     socket.on("message", async (text) => {
@@ -115,7 +152,7 @@ const handleChatEvents = (io) => {
         console.error("Empty message text");
         return; // Don't proceed if the message text is empty
       }
-      
+
       await sendMessage(
         io,
         socket.user._id,
@@ -123,16 +160,15 @@ const handleChatEvents = (io) => {
         text
       );
 
-      if(socket.user) {
-        console.log(socket.user)
-      }
+      // if (socket.user) {
+      //   console.log(socket.user);
+      // }
 
       if (!socket.user || !socket.user._id) {
         console.error("User not properly authenticated");
         // Handle the error or emit an error event here
         return;
       }
-
     });
 
     // Handle disconnection
