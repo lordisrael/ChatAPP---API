@@ -1,135 +1,58 @@
 const Chat = require("../models/chat");
 const User = require("../models/user");
-const jwt = require("jsonwebtoken");
-// Function to handle sending messages
-const sendMessage = async (socket, senderId, receiverId, text) => {
+const {
+  NotFoundError,
+  BadRequestError,
+  UnauthenticatedError,
+} = require("../errors/index");
+const { StatusCodes } = require("http-status-codes");
+const asyncHandler = require("express-async-handler");
+
+const getAllChat = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
   try {
-    // const { text } = data;
-
-    if (!text || text.trim() === "") {
-      console.error("Empty message text");
-      return; // Don't proceed if the message text is empty
-    }
-
-    // Check if a chat exists between these two users
-     let chat = await Chat.findOne({
-       $or: [
-         { participants: { $all: [senderId, receiverId] } },
-         { participants: { $all: [receiverId, senderId] } }, // Check both combinations
-       ],
-     });
-
-    // If no chat exists, create a new one
-    if (!chat) {
-      chat = new Chat({
-        participants: [senderId, receiverId],
+    // Find chats where the user ID is a participant
+    let chats = await Chat.find({ participants: { $in: [_id] } }).select(
+      "-messages -createdAt -updatedAt -__v"
+    ).populate({
+        path: 'participants',
+        select: 'username',
+        match: { _id: { $ne: _id } } // Populate participant usernames only
       });
-    }
 
-    // Add the message to the chat
-    chat.messages.push({
-      sender: senderId,
-      text,
-    });
-
-    await chat.save();
-
-    // Emit the message to the sender and receiver
-    //io.to(senderId).emit("message", { senderId, text });
-    //io.to(receiverId).emit("message", { senderId, text });
-    socket.to(senderId).emit("message", { senderId, text });
-    socket.to(receiverId).emit("message", { senderId, text });
+    res.status(StatusCodes.OK).json({ chats });
   } catch (error) {
-    // Handle errors
-    console.error(error);
-    // You might want to emit an error event here
+    // Handle errors appropriately
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: error.message });
   }
-};
+});
 
-const verifyToken = (token) => {
-  try {
-    // Verify the token and decode the payload
-    const decoded = jwt.verify(token, process.env.JWT_SECRET); 
-    return decoded;
-  } catch (error) {
-    return null; // If token verification fails, return null
-  }
-};
 
-// Socket.io event handling
-const handleChatEvents = (io) => {
-  const authenticateSocket = async (socket, next) => {
-    // const token =
-    //   socket.handshake.Headers.Authorization ||
-    //   socket.handshake.query.token ||
-    //   socket.request.headers.token ||
-    //   socket.handshake.Headers.token ||
-    //   socket.handshake.headers.access_token;;
-    const token = socket.request.headers.token;
-    console.log("Received token:", token);
-    //socket.request.cookies.my_token;
-    const payLoad = await verifyToken(token);
-    if (!payLoad) {
-      console.error("Invalid token");
-      next(new Error("Invalid token"));
-      return;
-    }
 
-    const user = await User.findById(payLoad.id);
-    if (!user) {
-      console.error("User not found");
-      next(new Error("User not found"));
-      return;
-    }
-
-    socket.user = user;
-    next();
-  };
-
-  // Apply the authentication middleware to your socket connection
-  io.use(authenticateSocket, (error) => {
-    console.error(error.message);
-    socket.disconnect();
-  });
-
-  io.on("connection", (socket) => {
-    console.log(`Socket connected: ${socket.id}`);
-
-    const receiverId = socket.handshake.query.receiverId;
-
-    // Handle sending messages
-    socket.on("message", async (text) => {
-      //const { text } = data;
-
-      if (!text || text.trim() === "") {
-        console.error("Empty message text");
-        return; // Don't proceed if the message text is empty
-      }
-      
-      await sendMessage(
-        io,
-        socket.user._id,
-        socket.handshake.query.receiverId,
-        text
-      );
-
-      if(socket.user) {
-        console.log(socket.user)
-      }
-
-      if (!socket.user || !socket.user._id) {
-        console.error("User not properly authenticated");
-        // Handle the error or emit an error event here
-        return;
-      }
-
+const getAChat = asyncHandler(async(req, res) => {
+  const { id: chatId } = req.params;
+  const userId = req.user._id;
+  const chat = await Chat.findById({ _id: chatId })
+    .select("-participants")
+    .populate({
+      path: "messages", // Populate the 'messages' field
+      populate: {
+        path: "sender", // Populate the 'sender' field within 'messages'
+        select: "username", // Select the 'username' field of the sender
+      },
     });
 
-    // Handle disconnection
-    socket.on("disconnect", () => {
-      console.log(`Socket disconnected: ${socket.id}`);
-    });
-  });
-};
 
-module.exports = handleChatEvents; 
+  if (!chat) {
+    return res.status(StatusCodes.NOT_FOUND).json({ error: "Chat not found" });
+  }
+
+  res.status(StatusCodes.OK).json(chat);
+})
+
+module.exports = {
+  getAllChat,
+  getAChat
+}
