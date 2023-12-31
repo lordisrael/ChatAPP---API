@@ -289,6 +289,10 @@ const acceptFriendRequest = asyncHandler(async (req, res) => {
   return res.status(200).json({ message: "Friend request accepted" });
 });
 
+const profile = asyncHandler(async(req, res) => {
+  
+})
+
 
 module.exports = {
     createUser,
