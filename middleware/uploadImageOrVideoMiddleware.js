@@ -85,33 +85,6 @@ const chatImgResize = async (req, res, next) => {
 };
 
 
-// const chatMediaResize = async (req, res, next) => {
-//   if (!req.files) return next();
-//      try {
-//        await Promise.all(
-//          req.files.map(async (file) => {
-//            if (file.mimetype.startsWith("video/")) {
-//              await ffmpeg(file.path)
-//                .size("640x?") // Set the width to 640 pixels and maintain aspect ratio
-//                .videoCodec("libx264") // Use H.264 codec for the video
-//                .on("error", (err) => {
-//                  console.error("Error during video resizing:", err);
-//                })
-//                .on("end", () => {
-//                  console.log("Video resizing completed");
-//                })
-//                .save(`chat/video/user/${file.filename}`); // Save the resized video
-//              fs.unlinkSync(`chat/video/user/${file.filename}`); // Corrected the path here
-//            }
-//          })
-//        );
-//      } catch (err) {
-//        return next(err);
-//      }
-
-//      next();
-// };
-
 const chatMediaResize = async (req, res, next) => {
   if (!req.files) return next();
   try {
@@ -126,9 +99,9 @@ const chatMediaResize = async (req, res, next) => {
             })
             .on("end", () => {
               console.log("Video resizing completed");
-              fs.unlinkSync(file.path); // Delete the original file after ffmpeg processing
+              fs.unlinkSync(file.path); 
             })
-            .save(`chat/video/user/${file.filename}`); // Save the resized video
+            .save(`chat/video/user/${file.filename}`); 
         }
       })
     );
