@@ -1,4 +1,4 @@
-const cloudinary = require("cloudinary");
+const cloudinary = require("cloudinary").v2;
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -6,20 +6,39 @@ cloudinary.config({
   api_secret: process.env.API_SECRET,
 });
 
-const cloudinaryUploadImg = async (fileToUploads) => {
-  return await new Promise((resolve) => {
-    cloudinary.uploader.upload(fileToUploads, (result) => {
-      resolve(
-        {
-          url: result.secure_url,
-        },
-        {
-          resource_type: "auto",
-        }
-      );
+
+const cloudinaryUploadImg = async(fileToUpload) => {
+   try {
+     const result = await cloudinary.uploader.upload(fileToUpload, {
+       resource_type: "auto",
+     });
+     console.log(`> Result: ${result.secure_url}`);
+     return {
+       url: result.secure_url,
+     };
+   } catch (error) {}
+}
+
+
+const cloudinaryUploadVideo = async (fileToUpload, resourceType) => {
+  try {
+    const result = await cloudinary.uploader.upload(fileToUpload, {
+      resource_type: "video",
     });
-  });
+    console.log(`> Result: ${result.secure_url}`);
+    if (result && result.secure_url) {
+      return {
+        url: result.secure_url,
+        resource_type: result.resource_type || "video",
+      };
+    } else {
+      throw new Error("Failed to get secure URL for video.");
+    }
+  } catch (error) {
+    throw error;
+  }
 };
+
 
 
 const cloudinaryUploadImgDel = async (fileToUploads) => {
@@ -53,4 +72,4 @@ const cloudinaryDeleteImg = async (publicIdToDelete) => {
 
 
 
-module.exports = {cloudinaryUploadImg, cloudinaryDeleteImg, cloudinaryUploadImgDel};
+module.exports = {cloudinaryUploadImg, cloudinaryDeleteImg, cloudinaryUploadImgDel, cloudinaryUploadVideo};
