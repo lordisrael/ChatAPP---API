@@ -14,7 +14,13 @@ const chatSchema = new mongoose.Schema({
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
         },
-        text: String,
+        messageType: {
+          type: String,
+          enum: ["text", "image", "video"], // Enum defining message types
+        },
+        text: String, // For text messages
+        imageUrl: [], // For image URL or path
+        videoUrl: [], // For video URL or path
         createdAt: {
           type: Date,
           default: Date.now,
