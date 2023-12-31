@@ -16,11 +16,13 @@ const handleChatEvents = require("./controllers/msgCtrl");
 const errorHandlerMiddleware = require("./middleware/error-handler");
 const notFoundMiddleware = require("./middleware/not-Found");
 const authRoute = require("./routes/authRoute");
+const chatRoute = require('./routes/chatRoutes')
 
 app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth", authRoute);
+app.use("/api/chat", chatRoute)
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
