@@ -13,29 +13,31 @@ const server = http.createServer(app);
 const socketIO = require("socket.io");
 
 const handleChatEvents = require("./controllers/msgCtrl");
+const handleGroupChatEvents = require('./controllers/grpMsgChatCtrl')
 const errorHandlerMiddleware = require("./middleware/error-handler");
 const notFoundMiddleware = require("./middleware/not-Found");
 const authRoute = require("./routes/authRoute");
 const chatRoute = require('./routes/chatRoutes')
+const groupRoute = require('./routes/groupRoute')
 
 app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth", authRoute);
 app.use("/api/chat", chatRoute)
+app.use("/api/group", groupRoute)
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
-// const server = app.listen(port, () => {
-//   console.log(`Server is listening on port ${port}`);
-// });
 // Initialize Socket.io
 const io = socketIO(server, {
   cors: {
-    origin: "*", // Allow requests from any origin, modify as needed
+    origin: "*", // Allow requests from any origin
   },
 });
 
+
+handleGroupChatEvents(io)
 handleChatEvents(io)
 
 
