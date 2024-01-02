@@ -104,6 +104,12 @@ const handleChatEvents = (io) => {
     console.log(`Socket connected: ${socket.id}`);
 
     const receiverId = socket.handshake.query.receiverId;
+    if (!receiverId) {
+      console.log("No receiverId provided. Cannot create chat.");
+      // Handle the absence of receiverId, such as emitting an error event or disconnecting the socket
+      socket.disconnect();
+      return;
+    }
 
     let chat = await Chat.findOne({
       $or: [
