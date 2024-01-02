@@ -41,6 +41,12 @@ const userSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    groups: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Group", // Reference to the Group model
+      },
+    ],
     // Additional fields
     //   status: {
     //     type: String,
