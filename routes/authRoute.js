@@ -42,7 +42,6 @@ router.put("/accept-friend-request/:requestId", auth, acceptFriendRequest);
 router.put( "/editbio", auth, editBio)
 router.get("/profile", auth, profile)
 router.get("/dispaly-friend-list", auth, displayFriendList)
-router.get("/search", auth)
 
 
 module.exports = router;
