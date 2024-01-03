@@ -10,6 +10,8 @@ const {
   sendFriendRequest,
   viewFriendRequests,
   acceptFriendRequest,
+  profile,
+  displayFriendList,
   
 } = require("../controllers/userCtrl");
 
@@ -38,6 +40,9 @@ router.post("/send-friend-request/:_id", auth, sendFriendRequest);
 router.get("/view-friend-requests", auth, viewFriendRequests);
 router.put("/accept-friend-request/:requestId", auth, acceptFriendRequest);
 router.put( "/editbio", auth, editBio)
+router.get("/profile", auth, profile)
+router.get("/dispaly-friend-list", auth, displayFriendList)
+router.get("/search", auth)
 
 
 module.exports = router;
