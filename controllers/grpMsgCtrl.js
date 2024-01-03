@@ -45,10 +45,60 @@ const createGroup = asyncHandler(async (req, res) => {
 });
 
 const deleteGroup = asyncHandler(async(req, res) => {
+  const {_id} = req.user
+  const groupId = req.params.groupId
+
+  try {
+    const group = await Group.findOne({ _id: groupId, admin: _id });
+
+    if (!group) {
+      return res
+        .status(404)
+        .json({ message: "Group not found or user is not admin" });
+    }
+
+    // If the user is an admin and the group exists, proceed with deletion
+    await Group.findByIdAndDelete(groupId);
+
+    res.status(200).json({ message: "Group deleted successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to delete group", error: error.message });
+  }
+})
+
+const deleteMsgByAdmin = asyncHandler(async(req, res) => {
 
 })
 
 const groupBio = asyncHandler(async(req, res) => {
+  const { _id } = req.user;
+  const { bio} = req.body;
+  const groupId = req.params.groupId;
+  try {
+    console.log (groupId)
+    console.log(_id)
+
+    const group = await Group.findOneAndUpdate(
+      { _id: groupId, admin: _id },
+      { $set: { bio: bio } },
+      { new: true }
+      );
+      
+      if (!group) {
+        return res
+          .status(404)
+          .json({ message: "Group not found or user is not admin" });
+      }
+    
+
+    res.status(200).json({ group, message: "Bio updated successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error updating bio", error: error.message });
+  }
 
 })
 
@@ -56,6 +106,10 @@ const addFriendstoGrp = asyncHandler(async(req, res) => {
 
 })
 
+
+
 module.exports = {
-    createGroup
+    createGroup,
+    groupBio,
+    deleteGroup
 }
