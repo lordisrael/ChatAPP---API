@@ -240,7 +240,7 @@ const viewFriendRequests = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "User not found" });
   }
 
-  return res.status(200).json({ friendRequests: user.friendRequests });
+  return res.status(StatusCodes.OK).json({ friendRequests: user.friendRequests });
 });
 
 const acceptFriendRequest = asyncHandler(async (req, res) => {
@@ -290,7 +290,39 @@ const acceptFriendRequest = asyncHandler(async (req, res) => {
 });
 
 const profile = asyncHandler(async(req, res) => {
+  const {_id} = req.user
+
+  const user = await User.findById(_id).select('username bio email profilePicture')
+  res.status(StatusCodes.OK).json(user);
   
+})
+
+const searchFriends = asyncHandler(async(req, res) => {
+  const {username} = req.query
+  const queryObject = {}
+  if(username) {
+    queryObject.username = {$regex: username, $options: 'i'}
+  }
+  let result  = User.find(queryObject)
+  const user = await result.select('username profilePicture')
+  res.status(StatusCodes.OK).json(user)
+  
+})
+
+const displayFriendList = asyncHandler(async(req, res) => {
+  const { _id } = req.user;
+
+  const user = await User.findById(_id).select(
+    "friends"
+  ).populate({
+    path: "friends", 
+    select: "username profilePicture"
+  });
+  res.status(StatusCodes.OK).json(user);
+})
+
+const leaveGroup = asyncHandler(async(req, res) => {
+
 })
 
 
@@ -302,5 +334,8 @@ module.exports = {
     sendFriendRequest,
     viewFriendRequests,
     acceptFriendRequest,
-    deleteProfilePicture
+    deleteProfilePicture,
+    profile,
+    searchFriends,
+    displayFriendList
 }
