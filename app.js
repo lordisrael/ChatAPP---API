@@ -19,6 +19,7 @@ const notFoundMiddleware = require("./middleware/not-Found");
 const authRoute = require("./routes/authRoute");
 const chatRoute = require('./routes/chatRoutes')
 const groupRoute = require('./routes/groupRoute')
+const searchRoute = require('./routes/searchRoutes')
 
 app.use(express.json());
 app.use(cookieParser());
@@ -26,6 +27,8 @@ app.use(cookieParser());
 app.use("/api/auth", authRoute);
 app.use("/api/chat", chatRoute)
 app.use("/api/group", groupRoute)
+app.use("/api/search", searchRoute)
+
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
