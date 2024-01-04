@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Group = require("../models/group");
+const User = require('../models/user')
 const {
   NotFoundError,
   BadRequestError,
@@ -69,6 +70,12 @@ const deleteGroup = asyncHandler(async(req, res) => {
 })
 
 const deleteMsgByAdmin = asyncHandler(async(req, res) => {
+  const { _id } = req.user;
+  const groupId = req.params.groupId;
+  const messageId = req.params.messageId
+  try {
+
+  } catch (error) {}
 
 })
 
@@ -103,6 +110,36 @@ const groupBio = asyncHandler(async(req, res) => {
 })
 
 const addFriendstoGrp = asyncHandler(async(req, res) => {
+  const {_id} = req.user
+  const groupId = req.params.groupId;
+  const userId = req.params.userId
+
+  try {
+       const userExists = await User.findById(userId); // Assuming you have a User model
+
+       if (!userExists) {
+         return res.status(404).json({ message: "User not found" });
+       }
+
+       // Update the group by adding the user to the members array
+       const updatedGroup = await Group.findOneAndUpdate(
+         { _id: groupId, admin: _id, members: { $ne: userId } }, // Ensure user is not already a member
+         { $push: { members: userId } },
+         { new: true }
+       );
+
+       if (!updatedGroup) {
+         return res
+           .status(404)
+           .json({ message: "Group not found or user already a member" });
+       }
+       res.status(200).json({ updatedGroup });
+
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
 
 })
 
@@ -111,5 +148,6 @@ const addFriendstoGrp = asyncHandler(async(req, res) => {
 module.exports = {
     createGroup,
     groupBio,
-    deleteGroup
+    deleteGroup, 
+    addFriendstoGrp
 }
