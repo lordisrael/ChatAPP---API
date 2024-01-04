@@ -69,12 +69,43 @@ const deleteGroup = asyncHandler(async(req, res) => {
   }
 })
 
-const deleteMsgByAdmin = asyncHandler(async(req, res) => {
+const deleteMsgBySender = asyncHandler(async(req, res) => {
   const { _id } = req.user;
   const groupId = req.params.groupId;
   const messageId = req.params.messageId
   try {
+    const group = await Group.findById(groupId);
 
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    // Find the message within the group's messages array
+    const message = group.messages.id(messageId);
+
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+    console.log(message.sender)
+    console.log(_id)
+
+     const senderIdString = message.sender.toString();
+     const userIdString = _id.toString();
+
+     // Check if the logged-in user is the sender of the message
+     if (senderIdString !== userIdString) {
+       return res
+         .status(403)
+         .json({ message: "You are not authorized to delete this message" });
+     }
+
+    // Remove the message if the sender matches the logged-in user using findOneAndDelete
+    await Group.findOneAndUpdate(
+      { _id: groupId },
+      { $pull: { messages: { _id: messageId } } },
+      { new: true }
+    );
+    res.status(200).json({ message: "Message deleted successfully" });
   } catch (error) {}
 
 })
@@ -148,6 +179,7 @@ const addFriendstoGrp = asyncHandler(async(req, res) => {
 module.exports = {
     createGroup,
     groupBio,
+    deleteMsgBySender,
     deleteGroup, 
     addFriendstoGrp
 }
