@@ -12,6 +12,7 @@ const {
   acceptFriendRequest,
   profile,
   displayFriendList,
+  leaveGroup,
   
 } = require("../controllers/userCtrl");
 
@@ -36,6 +37,7 @@ router.put(
   auth,
   deleteProfilePicture
 );
+router.patch("/leave-group/:groupId", auth, leaveGroup)
 router.post("/send-friend-request/:_id", auth, sendFriendRequest);
 router.get("/view-friend-requests", auth, viewFriendRequests);
 router.put("/accept-friend-request/:requestId", auth, acceptFriendRequest);
