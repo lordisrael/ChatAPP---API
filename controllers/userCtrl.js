@@ -1,4 +1,5 @@
 const User = require('../models/user')
+const Group = require("../models/group")
 const asyncHandler = require("express-async-handler");
 const {
   NotFoundError,
@@ -181,7 +182,7 @@ const editBio = asyncHandler(async(req, res) => {
        throw new NotFoundError(`No user found`);
      }
 
-     res.status(200).json({ updatedUser, message: "Bio updated successfully" });
+     res.status(200).json({ /*updatedUser,*/ message: "Bio updated successfully" });
    } catch (error) {
      res
        .status(500)
@@ -322,6 +323,31 @@ const displayFriendList = asyncHandler(async(req, res) => {
 })
 
 const leaveGroup = asyncHandler(async(req, res) => {
+  const userId = req.user.id;
+  const groupId = req.params.groupId
+  try {
+     const userExists = await User.findById(userId); // Assuming you have a User model
+
+     if (!userExists) {
+       return res.status(404).json({ message: "User not found" });
+     }
+     const updatedGroup = await Group.findByIdAndUpdate(
+       { _id: groupId}, // Ensure user is not already a member
+       { $pull: { members: userId } },
+       { new: true }
+     );
+
+     if (!updatedGroup) {
+       return res
+         .status(404)
+         .json({ message: "Group not found or user already a member" });
+     }
+     res.status(200).json({ updatedGroup });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
 
 })
 
@@ -333,6 +359,7 @@ module.exports = {
     uploadProfilePicture,
     sendFriendRequest,
     viewFriendRequests,
+    leaveGroup,
     acceptFriendRequest,
     deleteProfilePicture,
     profile,
