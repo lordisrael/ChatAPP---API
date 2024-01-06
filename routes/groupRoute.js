@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const {createGroup, deleteGroup, groupBio, addFriendstoGrp, deleteMsgBySender, sendPICorVID} = require('../controllers/grpMsgCtrl')
+const {createGroup, deleteGroup, groupBio, addFriendstoGrp, deleteMsgBySender, sendPICorVID, getAllGroup} = require('../controllers/grpMsgCtrl')
 const {
   uploadPhotoOrVideo,
   chatImgResize,
@@ -16,6 +16,7 @@ router.delete("/:groupId/message/:messageId", auth, deleteMsgBySender);
 router.post("/create", auth, createGroup);
 router.put("/edit-bio/:groupId", auth, groupBio)
 router.delete("/delete/:groupId", auth, deleteGroup)
+router.get("/get-all-group", auth, getAllGroup)
 
 
 router.put(
