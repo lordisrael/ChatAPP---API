@@ -6,6 +6,11 @@ const {
   BadRequestError,
   UnauthenticatedError,
 } = require("../errors/index");
+const {
+  cloudinaryUploadImg,
+  cloudinaryUploadImgDel,
+  cloudinaryUploadVideo,
+} = require("../utils/cloudinary");
 const { StatusCodes } = require("http-status-codes");
 
 const createGroup = asyncHandler(async (req, res) => {
@@ -173,13 +178,113 @@ const addFriendstoGrp = asyncHandler(async(req, res) => {
   }
 
 })
+const sendPICorVID = asyncHandler(async (req, res) => {
+    const { id: groupId } = req.params;
+    const userId = req.user._id;
 
+    const uploader = async (path, resourceType) => {
+      // Uploads the file to Cloudinary with the specified resource type
+      console.log(`Uploading ${resourceType} file: ${path}`);
+      if (resourceType === "image") {
+        return await cloudinaryUploadImg(path, "image");
+      }
+      if (resourceType === "video") {
+        return await cloudinaryUploadVideo(path, "video");
+        // Assuming a separate function cloudinaryUploadVideo for video uploads
+      }
+      // return await  cloudinaryUploadImg(path, resourceType);
+    };
+    // const uploader = (path) => cloudinaryUploadImg(path, "media");
+
+    const files = req.files;
+    const imageFiles = [];
+    const videoFiles = [];
+
+    // Categorize files into image and video arrays based on MIME type or other criteria
+    for (const file of files) {
+      if (file.mimetype.startsWith("image")) {
+        imageFiles.push(file.path);
+      }
+      if (file.mimetype.startsWith("video")) {
+        videoFiles.push(file.path);
+      }
+    }
+    console.log("Image Files:", imageFiles);
+    console.log("Video Files:", videoFiles);
+
+    const uploadedImageUrls = await Promise.all(
+      imageFiles.map(async (path) => {
+        return await uploader(path, "image");
+      })
+    );
+
+    const uploadedVideoUrls = await Promise.all(
+      videoFiles.map(async (path) => {
+        return await uploader(path, "video");
+      })
+    );
+    console.log("Uploaded Image URLs:", uploadedImageUrls);
+    console.log("Uploaded Video URLs:", uploadedVideoUrls);
+
+    //const updateFields = {};
+    const messageObjects = [];
+
+    if (uploadedImageUrls.length > 0) {
+      const imageMessages = uploadedImageUrls.map((image) => {
+        return {
+          sender: userId,
+          messageType: "image",
+          imageUrl: [image.url],
+          createdAt: new Date(),
+        };
+      });
+      messageObjects.push(...imageMessages);
+    }
+
+    if (uploadedVideoUrls.length > 0) {
+      const videoMessages = uploadedVideoUrls.map((video) => {
+        return {
+          sender: userId,
+          messageType: "video",
+          videoUrl: [video.url],
+          createdAt: new Date(),
+        };
+      });
+      messageObjects.push(...videoMessages);
+    }
+
+    // if (messageObjects.length > 0) {
+    //   updateFields.$push = { messages: { $each: messageObjects } };
+    // }
+
+    const group = await Group.findByIdAndUpdate(
+      groupId,
+      {
+        $push: {
+          messages: {
+            $each: messageObjects,
+          },
+        },
+      },
+      {
+        new: true, // To return the updated document
+        runValidators: true, // To run validators for the updated document
+      }
+    );
+
+    if (!group) {
+      return res.status(404).json({ error: "Group not found" });
+    }
+
+    res.json(group);// Sending back the updated chat object as a response
+  });
 
 
 module.exports = {
-    createGroup,
-    groupBio,
-    deleteMsgBySender,
-    deleteGroup, 
-    addFriendstoGrp
-}
+  createGroup,
+  groupBio,
+  deleteMsgBySender,
+  deleteGroup,
+  addFriendstoGrp,
+  sendPICorVID
+};
