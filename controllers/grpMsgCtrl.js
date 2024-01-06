@@ -279,6 +279,21 @@ const sendPICorVID = asyncHandler(async (req, res) => {
     res.json(group);// Sending back the updated chat object as a response
   });
 
+const getAllGroup = asyncHandler(async(req, res) => {
+   try {
+     const userId = req.user._id;
+
+     // Find all groups where the userId exists in the members array
+     const groups = await Group.find({ members: userId }).exec();
+
+     // Send the groups as a response
+     res.status(200).json({ groups });
+   } catch (error) {
+     // Handle any errors that occur during the process
+     res.status(500).json({ message: "Failed to retrieve groups" });
+   }
+})
+
 
 module.exports = {
   createGroup,
@@ -286,5 +301,6 @@ module.exports = {
   deleteMsgBySender,
   deleteGroup,
   addFriendstoGrp,
-  sendPICorVID
+  sendPICorVID,
+  getAllGroup
 };
