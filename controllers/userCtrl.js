@@ -202,10 +202,11 @@ const sendFriendRequest = asyncHandler(async(req, res) => {
   }
 
   // Check if the receiver is already in the sender's friend requests or friends
-  const isReceiverInfriends = sender.friends.some((friend) =>
-    friend.user.equals(_id)
-  );
+  // const isReceiverInfriends = sender.friends.some((friend) =>
+  //   friend.user.equals(_id)
+  // );
 
+  const isReceiverInfriends = sender.friends.includes(receiver._id);
   if (isReceiverInfriends) {
     return res.status(400).json({
       message: "User is already a friend",
