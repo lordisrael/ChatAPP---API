@@ -1,0 +1,591 @@
+openapi: 3.0.0
+info:
+  title: Chat App
+  contact: {}
+  version: '1.0'
+servers:
+- url: https://chatapp-d59m.onrender.com/api
+  variables: {}
+paths:
+  /auth/register:
+    post:
+      tags:
+      - User
+      summary: Create User
+      operationId: CreateUser
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateUserRequest'
+              - example:
+                  username: matt
+                  email: matt@gmail.com
+                  password: LoveIman
+                  confirmPassword: LoveIman
+            example:
+              username: matt
+              email: matt@gmail.com
+              password: LoveIman
+              confirmPassword: LoveIman
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+  /auth/login:
+    post:
+      tags:
+      - User
+      summary: Login
+      operationId: Login
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/LoginRequest'
+              - example:
+                  email: matt@gmail.com
+                  password: LoveIman
+            example:
+              email: matt@gmail.com
+              password: LoveIman
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+  /auth/upload:
+    put:
+      tags:
+      - User
+      summary: Upload picture
+      operationId: Uploadpicture
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            encoding: {}
+            schema:
+              required:
+              - image
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+        required: false
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /auth/editbio:
+    put:
+      tags:
+      - User
+      summary: Edit Bio
+      operationId: EditBio
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/EditBioRequest'
+              - example:
+                  bio: love and light from this side
+            example:
+              bio: love and light from this side
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /auth/delete:
+    put:
+      tags:
+      - User
+      summary: Delete Picture
+      operationId: DeletePicture
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /auth/send-friend-request/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+        description: The friend ID
+    post:
+      tags:
+      - User
+      summary: Send Friend Request
+      operationId: SendFriendRequest
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /auth/view-friend-requests:
+    get:
+      tags:
+      - User
+      summary: View FriendRequest
+      operationId: ViewFriendRequest
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /auth/accept-friend-request/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+        description: Friend request ID
+    put:
+      tags:
+      - User
+      summary: Accept FriendRequest
+      operationId: AcceptFriendRequest
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /auth/profile:
+    get:
+      tags:
+      - User
+      summary: Profile
+      operationId: Profile
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /auth/dispaly-friend-list:
+    get:
+      tags:
+      - User
+      summary: Display FriendList
+      operationId: DisplayFriendList
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /auth/leave-group/{groupId}:
+    parameters:
+      - in: path
+        name: groupId
+        schema:
+          type: string
+        required: true
+        description: The user ID
+    patch:
+      tags:
+      - User
+      summary: Leave a group
+      operationId: Leaveagroup
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /chat/get-all-chat:
+    get:
+      tags:
+      - Chat
+      summary: Get ALL chat
+      operationId: GetALLchat
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /chat/get-a-chat/{chatId}:
+    parameters:
+      - in: path
+        name: chatId
+        schema:
+          type: string
+        required: true
+        description: The user ID
+    get:
+      tags:
+      - Chat
+      summary: Get A chat
+      operationId: GetAchat
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /chat/upload/{chatId}:
+    parameters:
+      - in: path
+        name: chatId
+        schema:
+          type: string
+        required: true
+        description: The user ID
+    put:
+      tags:
+      - Chat
+      summary: Upload Photo Or Video
+      operationId: UploadPhotoOrVideo
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            encoding: {}
+            schema:
+              required:
+              - media
+              type: object
+              properties:
+                media:
+                  type: string
+                  format: binary
+        required: false
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /group/create:
+    post:
+      tags:
+      - Group Chat
+      summary: Create Group
+      operationId: CreateGroup
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateGroupRequest'
+              - example:
+                  name: Luck Bet
+                  members:
+                  - 657b581bfedab7ead7c1b794
+            example:
+              name: Luck Bet
+              members:
+              - 657b581bfedab7ead7c1b794
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /group/delete/{groupId}:
+    parameters:
+      - in: path
+        name: groupId
+        schema:
+          type: string
+        required: true
+        description: The user ID
+    delete:
+      tags:
+      - Group Chat
+      summary: Delete group
+      operationId: Deletegroup
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /group/edit-bio/{groupId}:
+    parameters:
+      - in: path
+        name: groupId
+        schema:
+          type: string
+        required: true
+        description: The group ID
+    put:
+      tags:
+      - Group Chat
+      summary: Edit Bio
+      operationId: PutEditBio
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/EditBioRequest'
+              - example:
+                  bio: love and light here
+            example:
+              bio: love and light here
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /group/{groupId}/users/{userId}:
+    parameters:
+      - in: path
+        name: groupId
+        schema:
+          type: string
+        required: true
+        description: The group ID
+      - in: path
+        name: userId
+        schema:
+          type: string
+        required: true
+        description: The user ID
+    post:
+      tags:
+      - Group Chat
+      summary: Add friends to Group
+      operationId: AddfriendstoGroup
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /group/{groupId}/message/{messageId}:
+    parameters:
+      - in: path
+        name: groupId
+        schema:
+          type: string
+        required: true
+        description: The group ID
+      - in: path
+        name: messageId
+        schema:
+          type: string
+        required: true
+        description: The user ID
+    delete:
+      tags:
+      - Group Chat
+      summary: Delete message on group chat
+      operationId: Deletemessageongroupchat
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /group/message/upload/{groupId}:
+    parameters:
+      - in: path
+        name: groupId
+        schema:
+          type: string
+        required: true
+        description: The group ID
+    put:
+      tags:
+      - Group Chat
+      summary: Send Pic or Vid in Grp Chat
+      operationId: SendPicorVidinGrpChat
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            encoding: {}
+            schema:
+              required:
+              - media
+              type: object
+              properties:
+                media:
+                  type: string
+                  format: binary
+        required: false
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /group/get-all-group:
+    get:
+      tags:
+      - Group Chat
+      summary: Get all groups for user
+      operationId: Getallgroupsforuser
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /search:
+    get:
+      tags:
+      - Search
+      summary: Search friends
+      operationId: Searchfriends
+      parameters:
+      - name: username
+        in: query
+        description: ''
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: lordisrael
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+components:
+  schemas:
+    CreateUserRequest:
+      title: CreateUserRequest
+      required:
+      - username
+      - email
+      - password
+      - confirmPassword
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        confirmPassword:
+          type: string
+      example:
+        username: matt
+        email: matt@gmail.com
+        password: LoveIman
+        confirmPassword: LoveIman
+    LoginRequest:
+      title: LoginRequest
+      required:
+      - email
+      - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      example:
+        email: matt@gmail.com
+        password: LoveIman
+    EditBioRequest:
+      title: EditBioRequest
+      required:
+      - bio
+      type: object
+      properties:
+        bio:
+          type: string
+      example:
+        bio: love and light from this side
+    CreateGroupRequest:
+      title: CreateGroupRequest
+      required:
+      - name
+      - members
+      type: object
+      properties:
+        name:
+          type: string
+        members:
+          type: array
+          items:
+            type: string
+          description: ''
+      example:
+        name: Luck Bet
+        members:
+        - 657b581bfedab7ead7c1b794
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+security: []
+tags:
+- name: User
+- name: Chat
+- name: Group Chat
+- name: Search
