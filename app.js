@@ -20,16 +20,16 @@ const port = process.env.PORT || 3000;
 const app = express();
 const server = http.createServer(app);
 
-// app.set("trust proxy", 1);
-// app.use(
-//   rateLimiter({
-//     windowMs: 15 * 60 * 1000,
-//     max: 100,
-//   })
-// );
-app.use(helmet.xssFilter());
-// app.use(cors());
-// app.use(xss());
+app.set("trust proxy", 1);
+app.use(
+  rateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+  })
+);
+app.use(helmet());
+app.use(cors());
+
 
 const socketIO = require("socket.io");
 
