@@ -7,10 +7,10 @@ const helmet = require("helmet");
 const cors = require("cors");
 const rateLimiter = require("express-rate-limit");
 
-// //swagger
-// const swaggerUI = require('swagger-ui-express')
-// const YAML = require('yamljs')
-// const swaggerDocument = YAML.load('./swagger.yaml')
+//swagger
+const swaggerUI = require('swagger-ui-express')
+const YAML = require('yamljs')
+const swaggerDocument = YAML.load('./swagger.yaml')
 
 
 
@@ -45,10 +45,10 @@ const searchRoute = require('./routes/searchRoutes')
 app.use(express.json());
 app.use(cookieParser());
 
-// app.get("/", (req, res) => {
-//   res.send('<h1>E commerce</h1><a href="/api-docs">Documentation</a>');
-// });
-// app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+app.get("/", (req, res) => {
+  res.send('<h1>E commerce</h1><a href="/api-docs">Documentation</a>');
+});
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 app.use("/api/auth", authRoute);
 app.use("/api/chat", chatRoute)
